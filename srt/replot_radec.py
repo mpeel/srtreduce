@@ -23,8 +23,8 @@ for file in filelist:
 	plt.title('Summary RA/Dec coverage')
 	plt.xlabel('RA [deg]')
 	plt.ylabel('Dec [deg]')
-	plt.legend(loc='upper right')
+	plt.legend(loc='upper right',fontsize='x-small')
 	plt.tight_layout()
-	plt.savefig('summary_ra_dec_'+'{0:02d}'.format(i)+'.png')
+	plt.savefig('summary_ra_dec_'+'{0:02d}'.format(i)+'_ind.png')
 	i+=1
-plt.clf()
+	plt.clf()

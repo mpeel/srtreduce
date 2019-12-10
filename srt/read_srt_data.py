@@ -77,14 +77,16 @@ def read_fits_file(filename):
 	return ra, dec, az, el, data
 
 basedir = '/Volumes/Maxtor4TB/SRT/28-19/'
+basedir = '/Volumes/Maxtor4TB/SRT/33-18/'
 folderlist = os.listdir(basedir)
 todolist = []
 for folder in folderlist:
 	if '.' not in folder:
 		subfolderlist = os.listdir(basedir+folder)
 		search = 'PERSEUS_AZ'
-		search = '3C84_EL'
-		search = '3C84_OPTIMIZED'
+		# search = '3C84_EL'
+		# search = '3C84_OPTIMIZED'
+		search = 'W3OH'
 		subfolderlist = [f for f in subfolderlist if search in f]
 		for subfolder in subfolderlist:
 			todolist.append(basedir+folder+'/'+subfolder)
@@ -99,7 +101,7 @@ print(todolist)
 for inputdir in todolist:
 	prefix=inputdir.replace(basedir,'').replace('/','_')
 	ext = 'fits0'
-	numext = 7
+	numext = 1
 	inputlist = os.listdir(inputdir)
 	print(inputlist)
 	filelist = [f for f in inputlist if ext in f]
@@ -108,7 +110,8 @@ for inputdir in todolist:
 		for i in range(numext):
 			az_set, el_set, ra_set, dec_set, data = read_fits_file(inputdir+'/'+filename[:-1]+str(i))
 			# Just look at the first 1k channels for now - removing the first 10 channels as bad.
-			data = data[:,10:1023]#2048*2-1]
+			# data = data[:,10:1023]#2048*2-1]
+			data = data[:,8000:8300]
 			# Blank the first N channels
 			# data[:,1024:1034] = 1.0
 			if trip == 0:
@@ -302,5 +305,5 @@ for inputdir in todolist:
 	fits.writeto(prefix+'_map.fits', maparr, hdr, overwrite=True) 
 	fits.writeto(prefix+'_weights_map.fits', weightarr, hdr, overwrite=True) 
 
-	exit()
+	# exit()
 
