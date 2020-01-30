@@ -38,7 +38,7 @@ def subtractbaseline(data, option=0, navg=100):
 
 
 def read_fits_file(filename):
-
+	print(filename)
 	inputfits = fits.open(filename)
 	print(inputfits.info())
 	# print(inputfits[0].columns.names)
