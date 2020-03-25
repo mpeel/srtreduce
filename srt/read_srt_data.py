@@ -47,6 +47,10 @@ def read_fits_file(filename):
 	print(inputfits[3].columns.names)
 	print(inputfits[4].columns.names)
 	print(inputfits[5].columns.names)
+	print(inputfits[2].data)
+	print(inputfits[3].data)
+	print(inputfits[4].data.field(3)[0])
+	# exit()
 	ra = np.degrees(inputfits[4].data.field(3))
 	dec = np.degrees(inputfits[4].data.field(4))
 	az = np.degrees(inputfits[4].data.field(1))
@@ -76,17 +80,18 @@ def read_fits_file(filename):
 	# inputfits.close()
 	return ra, dec, az, el, data
 
-basedir = '/Volumes/Maxtor4TB/SRT/28-19/'
-basedir = '/Volumes/Maxtor4TB/SRT/33-18/'
+basedir = '/Volumes/Toshiba5TB2/SRT/28-19/modified/L-Band/'
+# basedir = '/Volumes/Maxtor4TB/SRT/33-18/'
 folderlist = os.listdir(basedir)
 todolist = []
 for folder in folderlist:
 	if '.' not in folder:
 		subfolderlist = os.listdir(basedir+folder)
-		search = 'PERSEUS_AZ'
+		search = 'PERSEUS'
+		# search = 'PERSEUS_AZ'
 		# search = '3C84_EL'
 		# search = '3C84_OPTIMIZED'
-		search = 'W3OH'
+		# search = 'W3OH'
 		subfolderlist = [f for f in subfolderlist if search in f]
 		for subfolder in subfolderlist:
 			todolist.append(basedir+folder+'/'+subfolder)
@@ -100,29 +105,86 @@ print(todolist)
 
 for inputdir in todolist:
 	prefix=inputdir.replace(basedir,'').replace('/','_')
-	ext = 'fits0'
+	ext = 'fits'
 	numext = 1
 	inputlist = os.listdir(inputdir)
 	print(inputlist)
 	filelist = [f for f in inputlist if ext in f]
 	trip = 0
 	for filename in filelist:#[0:10]:
+		if 'summary' in filename:
+			continue
 		for i in range(numext):
-			az_set, el_set, ra_set, dec_set, data = read_fits_file(inputdir+'/'+filename[:-1]+str(i))
+			az_set, el_set, ra_set, dec_set, data = read_fits_file(inputdir+'/'+filename[:])#+str(i))
 			# Just look at the first 1k channels for now - removing the first 10 channels as bad.
-			# data = data[:,10:1023]#2048*2-1]
-			data = data[:,8000:8300]
+			print(np.shape(data))
+			# exit()
+			# data = np.asarray(data[:,10:1023])#2048*2-1]
+			# data = data[:,8000:8300]
 			# Blank the first N channels
 			# data[:,1024:1034] = 1.0
+			data[:,190:192] = 1.0#np.nan
+			data[:,226:308] = 1.0#np.nan
+			data[:,410:483] = 1.0#np.nan
+			data[:,505:534] = 1.0#np.nan
+			data[:,580:580] = 1.0#np.nan
+			data[:,715:715] = 1.0#np.nan
+			data[:,761:778] = 1.0#np.nan
+			data[:,812:814] = 1.0#np.nan
 			if trip == 0:
 				print(np.shape(data))
-			data[~np.isfinite(data)] = 0.0
+			# data[~np.isfinite(data)] = 0.0
 			if trip == 0:
-				plt.plot(data.mean(axis=0),'b', label='Mean in given freq bin')
+				plt.plot(np.nanmean(data,axis=0),'b', label='Mean in given freq bin')
 				plt.savefig(prefix+'_bandpass.png')
 				plt.clf()
 				plt.pcolormesh(data)
 				plt.savefig(prefix+'_data_waterfall.png')
+				plt.clf()
+			plt.plot(np.nanmean(data,axis=0),'b', label='Mean in given freq bin')
+			plt.savefig(prefix+'_bandpass_'+filename[:-5]+'.png')
+			plt.clf()
+			plt.pcolormesh(data)
+			plt.savefig(prefix+'_data_waterfall_'+filename[:-5]+'.png')
+			plt.clf()
+
+			# Remove bad values in the bandpass
+			threshold=3.0
+			bandpass = np.nanmean(data,axis=0)
+			# for test in range(0,len(bandpass)):
+			# 	print(str(test) + ' ' + str(bandpass[test]))
+			# exit()
+			std = np.nanstd(bandpass)
+			median = np.nanmedian(bandpass)
+			# print(std)
+			bandpass[np.abs(bandpass-median) > std*threshold] = np.nan
+			# Do this twice.
+			std = np.nanstd(bandpass)
+			median = np.nanmedian(bandpass)
+			# print(std)
+			bandpass[np.abs(bandpass-median) > std*threshold] = np.nan
+			# timestream[timestream-median < std/threshold] = 1.0
+			if trip == 0:
+				plt.plot(bandpass)
+				plt.savefig(prefix+'_bandpass_deglitch.png')
+				plt.clf()
+			# Flag based on differencing as well
+			diff = np.abs(np.diff(bandpass,append=1))
+			# diff = np.concatenate(np.asarray(diff), np.asarray([1000]))
+			bandpass[diff>5] = np.nan
+			for j in range(0,len(bandpass)-1):
+				if bandpass[j+1] == np.nan:
+					bandpass[j] = np.nan
+
+			if trip == 0:
+				plt.plot(bandpass)
+				plt.savefig(prefix+'_bandpass_deglitch2.png')
+				plt.clf()
+			badvals = np.isnan(bandpass)
+			print(badvals==True)
+			print(np.sum(badvals==True))
+			data[:,badvals==True] = data[:,badvals==True]*np.nan
+
 			data = data/data.mean(axis=0)
 			if trip == 0:
 				plt.pcolormesh(data)
@@ -138,16 +200,19 @@ for inputdir in todolist:
 				plt.pcolormesh(data)
 				plt.savefig(prefix+'_data_waterfall_bp_std.png')
 				plt.clf()
+			plt.pcolormesh(data)
+			plt.savefig(prefix+'_data_waterfall_bp_std_'+filename[:-5]+'.png')
+			plt.clf()
 			# plt.plot(data)
 			# plt.savefig('test_data.png')
 			# plt.clf()
 			# Now flatten the dataset
-			timestream_set = data.mean(axis=1)
+			timestream_set = np.nanmean(data,axis=1)
 			if trip == 0:
 				plt.plot(timestream_set)
 				plt.savefig(prefix+'_timestream.png')
 				plt.clf()
-			# exit()
+			exit()
 			print(np.shape(az_set))
 			if trip == 0:
 				az = list(az_set.copy())
@@ -259,15 +324,15 @@ for inputdir in todolist:
 
 	# Remove glitches
 	threshold=5.0
-	std = np.std(timestream)
-	median = np.median(timestream)
+	std = np.nanstd(timestream)
+	median = np.nanmedian(timestream)
 	# print(std)
-	timestream[np.abs(timestream-median) > std*threshold] = 0.0
+	timestream[np.abs(timestream-median) > std*threshold] = np.nan
 	# Do this twice.
-	std = np.std(timestream)
-	median = np.median(timestream)
+	std = np.nanstd(timestream)
+	median = np.nanmedian(timestream)
 	# print(std)
-	timestream[np.abs(timestream-median) > std*threshold] = 0.0
+	timestream[np.abs(timestream-median) > std*threshold] = np.nan
 	# timestream[timestream-median < std/threshold] = 1.0
 	plt.plot(timestream)
 	plt.savefig(prefix+'_timestream_sub_deglitch.png')
