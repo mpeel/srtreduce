@@ -7,9 +7,15 @@ from scipy.optimize import curve_fit
 from srt_functions import *
 
 
-basedir = '/Volumes/Toshiba5TB2/SRT/28-19/modified/K-Band/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/28-19/modified/K-Band/'
 # basedir = '/Volumes/Maxtor4TB/SRT/33-18/'
-outdir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201124/'
+basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201125/'
+basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201127/'
+# outdir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
+# outdir = basedir+'../ngc6946_19/'
+outdir = basedir+'../ngc6946_24/'
+outdir = basedir+'../m51_19/'
 plotdir = outdir + 'plots/'
 toddir = outdir + 'tods/'
 mapdir = outdir + 'maps/'
@@ -24,18 +30,24 @@ birdies = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 107
 numchans = 1024
 folderlist = os.listdir(basedir)
 todolist = []
+# This is for where we have subfolders
+# for folder in folderlist:
+# 	if '.' not in folder:
+# 		subfolderlist = os.listdir(basedir+folder)
+# 		search = 'PERSEUS'
+# 		# search = 'PERSEUS_AZ'
+# 		# search = '3C84_EL'
+# 		# search = '3C84_OPTIMIZED'
+# 		# search = 'W3OH'
+# 		subfolderlist = [f for f in subfolderlist if search in f]
+# 		for subfolder in subfolderlist:
+# 			todolist.append(basedir+folder+'/'+subfolder)
+# 		print(subfolderlist)
+# This is for where we only have one folder
 for folder in folderlist:
-	if '.' not in folder:
-		subfolderlist = os.listdir(basedir+folder)
-		search = 'PERSEUS'
-		# search = 'PERSEUS_AZ'
-		# search = '3C84_EL'
-		# search = '3C84_OPTIMIZED'
-		# search = 'W3OH'
-		subfolderlist = [f for f in subfolderlist if search in f]
-		for subfolder in subfolderlist:
-			todolist.append(basedir+folder+'/'+subfolder)
-		print(subfolderlist)
+	# if 'N6946' in folder:
+	if 'M51' in folder:
+		todolist.append(basedir+folder)
 print(folderlist)
 print(todolist)
 for inputdir in todolist:
@@ -288,14 +300,17 @@ for inputdir in todolist:
 	std = np.nanstd(timestream)
 	median = np.nanmedian(timestream)
 	# print(std)
-	timestream[np.abs(timestream-median) > std*threshold] = np.nan
+	try:
+		timestream[np.abs(timestream-median) > std*threshold] = np.nan
+	except:
+		continue
 	# timestream[timestream-median < std/threshold] = 1.0
 	plt.plot(timestream)
 	plt.savefig(plotdir+prefix+'_timestream_sub_deglitch.png')
 	plt.clf()
 
 
-	numpix = 250
+	numpix = 60
 	min_ra = np.min(ra)
 	max_ra = np.max(ra)
 	pixsize_ra = (max_ra-min_ra)/(numpix-1)
