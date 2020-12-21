@@ -12,15 +12,19 @@ from matplotlib.dates import (YEARLY, DateFormatter,
 srt = EarthLocation(lat=39.4928*u.deg, lon=9.245*u.deg, height=600*u.m)
 utc_plus_one_hour = TimezoneInfo(utc_offset=1*u.hour)
 
-source_names = ['ngc6946','m51','ngc891','3C48','3C84','3C138','3C147', '3C273', '3C286','3C295', 'NGC7027']
+# source_names = ['ngc6946','m51','ngc891','3C48','3C84','3C138','3C147', '3C273', '3C286','3C295', 'NGC7027']
+source_names = ['m51','3C48','3C84','3C138','3C147', '3C273', '3C286','3C295']
 source_pos = []
 for i in range(0,len(source_names)):
 	source_pos.append(SkyCoord.from_name(source_names[i]))
 	print(source_names[i])
 	print(source_pos[i].to_string(style='hmsdms'))
 # exit()
-starttime = [Time('2020-11-24 10:37:00'),Time('2020-11-25 10:34:00'),Time('2020-11-27 03:26:00'),Time('2020-11-28 03:22:00'),Time('2020-11-30 17:45:00'),Time('2020-12-03 04:00:00'),Time('2020-12-03 13:45:00'),Time('2020-12-03 13:00:00'),Time('2020-12-03 16:00:00'),Time('2020-12-04 15:56:00')]
-endtime = [Time('2020-11-24 20:07:00'),Time('2020-11-25 20:04:00'),Time('2020-11-27 12:56:00'),Time('2020-11-28 12:52:00'),Time('2020-11-30 19:45:00'),Time('2020-12-03 05:00:00'),Time('2020-12-03 14:45:00'),Time('2020-12-03 14:00:00'),Time('2020-12-04 01:30:00'),Time('2020-12-05 01:26:00')]
+# starttime = [Time('2020-11-24 10:37:00'),Time('2020-11-25 10:34:00'),Time('2020-11-27 03:26:00'),Time('2020-11-28 03:22:00'),Time('2020-11-30 17:45:00'),Time('2020-12-03 04:00:00'),Time('2020-12-03 13:45:00'),Time('2020-12-03 13:00:00'),Time('2020-12-03 16:00:00'),Time('2020-12-04 15:56:00')]
+# endtime = [Time('2020-11-24 20:07:00'),Time('2020-11-25 20:04:00'),Time('2020-11-27 12:56:00'),Time('2020-11-28 12:52:00'),Time('2020-11-30 19:45:00'),Time('2020-12-03 05:00:00'),Time('2020-12-03 14:45:00'),Time('2020-12-03 14:00:00'),Time('2020-12-04 01:30:00'),Time('2020-12-05 01:26:00')]
+starttime = [Time('2021-02-04 22:50:00')]
+endtime = [Time('2021-02-05 08:20:00')]
+
 sampling = 1000
 formatter = DateFormatter('%H:%M')
 for k in range(0,len(starttime)):
@@ -76,7 +80,7 @@ for k in range(0,len(starttime)):
 	plt.title(starttime[k].to_value('iso', subfmt='date'))
 	ax.xaxis.set_major_formatter(formatter)
 	plt.tight_layout()
-	plt.savefig('visibility_latest_'+str(k)+'.png')
+	plt.savefig('visibility_latest_check_'+str(k)+'.png')
 	plt.clf()
 	# exit()
 		# print(altaz)
