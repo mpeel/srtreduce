@@ -10,12 +10,18 @@ from srt_functions import *
 # basedir = '/Volumes/Toshiba5TB2/SRT/28-19/modified/K-Band/'
 # basedir = '/Volumes/Maxtor4TB/SRT/33-18/'
 # basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201124/'
-basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201125/'
-basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201127/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201125/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201127/'
+basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20210205/'
+basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201203/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201204/'
 # outdir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
 # outdir = basedir+'../ngc6946_19/'
-outdir = basedir+'../ngc6946_24/'
-outdir = basedir+'../m51_19/'
+# outdir = basedir+'../ngc6946_24/'
+# outdir = basedir+'../m51_19/'
+outdir = basedir+'../m51_24/'
+# outdir = basedir+'../n891_24/'
+# outdir = basedir+'../n891_19/'
 plotdir = outdir + 'plots/'
 toddir = outdir + 'tods/'
 mapdir = outdir + 'maps/'
@@ -47,6 +53,7 @@ todolist = []
 for folder in folderlist:
 	# if 'N6946' in folder:
 	if 'M51' in folder:
+	# if 'N891' in folder:
 		todolist.append(basedir+folder)
 print(folderlist)
 print(todolist)
@@ -62,7 +69,10 @@ for inputdir in todolist:
 		if 'summary' in filename:
 			continue
 		for i in range(numext):
+			# if '20201127-042203-19-20-M51_RA_001_006' in filename:
 			az_set, el_set, ra_set, dec_set, data = read_fits_file(inputdir+'/'+filename[:])#+str(i))
+			# else:
+				# continue
 			horn_number = int(filename[-1])
 			nanarr = np.zeros(len(az_set))
 			nanarr[:] = np.nan

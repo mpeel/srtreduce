@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.io.fits as fits
 import os
+from astropy.wcs import WCS
 
 def subtractbaseline(data, option=0, navg=100):
 	# Crude baseline removal
@@ -38,22 +39,44 @@ def subtractbaseline(data, option=0, navg=100):
 # max_ra = 60.0
 # min_dec = 27.5
 # max_dec = 36.0
-min_ra = 308.2
-max_ra = 309.2
-min_dec = 59.8
-max_dec = 60.5
-min_ra = 202.1
-max_ra = 203.8
-min_dec = 47.0
-max_dec = 47.5
+# NGC6946
+# ra_cen = 308.718015
+# dec_cen = 60.153915
+# min_ra = 308.2
+# max_ra = 309.2
+# min_dec = 59.8
+# max_dec = 60.5
+# M51
+# ra_cen = 202.484167
+# dec_cen = 47.230556
+# min_ra = 202.2
+# max_ra = 202.8
+# min_dec = 47.0
+# max_dec = 47.4
+# NGC891
+ra_cen = 35.639224
+dec_cen = 42.349146
 # res = 0.4 / 60.0
-res = 1.0 / 60.0
+res = 0.5 / 60.0
+res_ra = res/np.cos(dec_cen*np.pi/180.0)
 # res = 3.0 / 60.0
-npix_ra = int((max_ra-min_ra)/res)
-npix_dec = int((max_dec-min_dec)/res)
+npix_ra = 60
+# npix_ra = int((max_ra-min_ra)/res)
+# res_dec = res/np.cos(0.5*(min_dec+max_dec)*np.pi/180.0)
+# min_dec = min_dec/np.cos(min_dec*np.pi/180.0)
+# max_dec = max_dec/np.cos(max_dec*np.pi/180.0)
+# npix_dec = int((max_dec-min_dec)/(res_dec))
+# npix_dec = int((max_dec-min_dec)/(res))
+npix_dec = npix_ra
+min_ra = ra_cen - 0.5*npix_ra*res_ra
+min_dec = dec_cen - 0.5*npix_dec*res
+max_ra = ra_cen + 0.5*npix_ra*res_ra
+max_dec = dec_cen + 0.5*npix_dec*res
 print('Num in RA:' + str(npix_ra))
 print('Num in Dec:' + str(npix_dec))
-pixsize_ra = res#(max_ra-min_ra)/(numpix-1)
+print('Min RA:' + str(min_ra))
+print('Min Dec:' + str(min_dec))
+pixsize_ra = res_ra#(max_ra-min_ra)/(numpix-1)
 ras = np.arange(min_ra,max_ra+pixsize_ra,pixsize_ra)
 print(len(ras))
 # exit()
@@ -62,9 +85,19 @@ print(len(ras))
 pixsize_dec = res#(max_dec-min_dec)/(numpix-1)
 decs = np.arange(min_dec,max_dec+pixsize_dec,pixsize_dec)
 print(len(decs))
+wcs_list = WCS(naxis=2)
+wcs_list.wcs.crpix = [npix_ra/2, npix_ra/2]
+wcs_list.wcs.crval = [ra_cen, dec_cen]
+wcs_list.wcs.cunit = ["deg", "deg"]
+wcs_list.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+wcs_list.wcs.cdelt = [res_ra, res]
+wcs_list.array_shape = [npix_ra, npix_dec]
+fits_header = wcs_list.to_header()
+print(fits_header)
+
 # Set 8 to do a combined one at the maxend-end
-numhorns = 8
-# numhorns = 1
+# numhorns = 8
+numhorns = 1
 for h in range(0,numhorns):
 
 	maparr = np.zeros([npix_ra,npix_dec])
@@ -75,26 +108,32 @@ for h in range(0,numhorns):
 	# exit()
 
 	# if h == 7:
-	ext = '.fits'
+	ext = 'fits'
 	# else:
-		# ext = 'fits'+str(h)
+	# ext = 'fits'+str(h)
 	numext = 1
-	basedir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
-	basedir = '/Volumes/Toshiba5TB2/SRT/28-19/calibrated/tod/'
-	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_19/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/28-19/calibrated/tod/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_19/'
 	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_24/'
-	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/m51_19/'
+	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/n891_24/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/m51_19/'
 	inputlist = os.listdir(basedir+'tods/')
 	filelist = [f for f in inputlist if ext in f]
 	# print(filelist)
 	filelist.sort()
-	print(filelist)
+	# print(filelist)
 	i = 0
 
 
-
+	prevfile = ''
 	for file in filelist:
 		print(file)
+		# if prevfile != '':
+		# 	break
+		# prevfile = file
+		# if 'DEC' in file:
+		# 	break
 		# if '018' in file:
 			# break
 		if 'map.fits' not in file:
@@ -110,7 +149,7 @@ for h in range(0,numhorns):
 			# print(timestream)
 			# print(len(ra))
 
-			# timestream = np.asarray(subtractbaseline(timestream))
+			timestream = np.asarray(subtractbaseline(timestream))
 			# plt.plot(timestream)
 			# plt.savefig(prefix+'_timestream_sub.png')
 			# plt.clf()
@@ -133,7 +172,9 @@ for h in range(0,numhorns):
 
 			minstart=0
 			maxend=len(timestream-1)
-			print(len(timestream))
+			# print(len(timestream))
+			# print(ra)
+			# print(dec)
 			for i in range(len(timestream)):
 				# start=i-15
 				# end=i+15
@@ -156,16 +197,20 @@ for h in range(0,numhorns):
 				pix_ra = int((ra[i]-min_ra)/pixsize_ra)
 				pix_dec = int((dec[i]-min_dec)/pixsize_dec)
 				# print(pix_ra,pix_dec)
-				maparr[pix_ra,pix_dec] += timestream[i]/variance
-				weightarr[pix_ra,pix_dec] += 1.0/variance
-				hitarr[pix_ra,pix_dec] += 1
+				if pix_ra < npix_ra and pix_dec < npix_dec and timestream[i] != 0:
+					maparr[pix_ra,pix_dec] += timestream[i]/variance
+					weightarr[pix_ra,pix_dec] += 1.0/variance
+					hitarr[pix_ra,pix_dec] += 1
 
 	maparr[weightarr != 0] /= weightarr[weightarr != 0]
 	maparr[hitarr == 0] = np.nan
 	weightarr[hitarr == 0] = np.nan
 	hitarr[hitarr == 0] = np.nan
 	# Write out maps
-	hdr = fits.header.Header()
+	# hdr = fits.PrimaryHDU(header=fits_header)
+	# hdr = fits.header.Header()
+	hdr = fits_header
+	print(hdr)
 	fits.writeto(basedir+'combined_map'+str(h)+'.fits', maparr, hdr, overwrite=True) 
 	fits.writeto(basedir+'combined_weights_map'+str(h)+'.fits', weightarr, hdr, overwrite=True) 
 	fits.writeto(basedir+'hitmap'+str(h)+'.fits', hitarr, hdr, overwrite=True) 
