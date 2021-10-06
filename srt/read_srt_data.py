@@ -13,7 +13,7 @@ from srt_functions import *
 # basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201125/'
 # basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201127/'
 basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20210205/'
-basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201203/'
+# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201203/'
 # basedir = '/Volumes/Toshiba5TB2/SRT/19-20/20201204/'
 # outdir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
 # outdir = basedir+'../ngc6946_19/'
@@ -32,6 +32,7 @@ os.makedirs(mapdir, exist_ok=True)
 
 doplots = False
 
+# K-band
 birdies = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 107, 108, 109, 110, 111, 128, 256, 384, 512, 513, 640, 768, 896, 972, 1023, 1024]
 numchans = 1024
 folderlist = os.listdir(basedir)
@@ -70,7 +71,7 @@ for inputdir in todolist:
 			continue
 		for i in range(numext):
 			# if '20201127-042203-19-20-M51_RA_001_006' in filename:
-			az_set, el_set, ra_set, dec_set, data = read_fits_file(inputdir+'/'+filename[:])#+str(i))
+			az_set, el_set, ra_set, dec_set, data = read_srt_fits_file(inputdir+'/'+filename[:])#+str(i))
 			# else:
 				# continue
 			horn_number = int(filename[-1])
@@ -203,7 +204,7 @@ for inputdir in todolist:
 				print(np.shape(az_set))
 
 			# Write out the TOD to disk
-			writefits(toddir+filename.replace('.','_')+'_tod.fits', ra_set, dec_set, timestream_set,prefix)
+			write_srt_fits(toddir+filename.replace('.','_')+'_tod.fits', ra_set, dec_set, timestream_set,prefix)
 
 			if trip == 0:
 				# az = list(az_set.copy())
@@ -347,5 +348,5 @@ for inputdir in todolist:
 	plt.clf()
 
 	hdr = fits.header.Header()
-	fits.writeto(mapdir+prefix+'_map.fits', maparr, hdr, overwrite=True) 
-	fits.writeto(mapdir+prefix+'_weights_map.fits', weightarr, hdr, overwrite=True) 
+	fits.writeto(mapdir+prefix+'_map.fits', maparr, hdr, overwrite=True)
+	fits.writeto(mapdir+prefix+'_weights_map.fits', weightarr, hdr, overwrite=True)

@@ -47,15 +47,15 @@ def subtractbaseline(data, option=0, navg=100):
 # min_dec = 59.8
 # max_dec = 60.5
 # M51
-# ra_cen = 202.484167
-# dec_cen = 47.230556
+ra_cen = 202.484167
+dec_cen = 47.230556
 # min_ra = 202.2
 # max_ra = 202.8
 # min_dec = 47.0
 # max_dec = 47.4
 # NGC891
-ra_cen = 35.639224
-dec_cen = 42.349146
+# ra_cen = 35.639224
+# dec_cen = 42.349146
 # res = 0.4 / 60.0
 res = 0.5 / 60.0
 res_ra = res/np.cos(dec_cen*np.pi/180.0)
@@ -115,9 +115,11 @@ for h in range(0,numhorns):
 	# basedir = '/Volumes/Toshiba5TB2/SRT/28-19/reduce/'
 	# basedir = '/Volumes/Toshiba5TB2/SRT/28-19/calibrated/tod/'
 	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_19/'
-	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_24/'
-	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/n891_24/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/ngc6946_24/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/n891_24/'
+	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/n891_19/'
 	# basedir = '/Volumes/Toshiba5TB2/SRT/19-20/m51_19/'
+	basedir = '/Volumes/Toshiba5TB2/SRT/19-20/m51_24/'
 	inputlist = os.listdir(basedir+'tods/')
 	filelist = [f for f in inputlist if ext in f]
 	# print(filelist)
