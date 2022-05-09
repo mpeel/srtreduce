@@ -5,11 +5,10 @@ import astropy.io.fits as fits
 import os
 import astropy.units as u
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Galactic, ICRS, FK5
-from srtobservation import *
-from srtdata import *
+from srt_observation import *
+from srt_data import *
 
-
-class srtreduce():
+class srt_reduce():
 	def __init__(self,basedir="", outdir='', project='', band='K', num_beams = 0):
 		# Directories
 		self.basedir = basedir
@@ -22,7 +21,8 @@ class srtreduce():
 		self.num_beams = num_beams
 		self.pix_xoff = np.zeros(0)
 		self.pix_yoff = np.zeros(0)
-		self.pix_rel = np.zeros(0)
+		self.pix_rel = np.zeros(0) # Relative power
+		self.attenuations = np.zeros(0)
 		self.nbins = 0
 		self.bw = 0
 		self.lo = 0
@@ -38,36 +38,34 @@ class srtreduce():
 		# Stable version control
 		self.ver = 0.0
 
+	# Read in basic parameters from an already open data fits file
+	# NOTE: this assumes they are the same for all observations that you'll work on with this instance.
 	def set_params(self, inputfits):
+		# Overall telescope and receiver properties
 		self.telescope = EarthLocation(lat=inputfits[0].header['SiteLatitude']*u.rad, lon=inputfits[0].header['SiteLongitude']*u.rad, height=inputfits[0].header['SiteHeight']*u.m)
 		if self.project == '':
 			self.project = inputfits[0].header['Project_Name'].strip()
-			# print(self.project)
 		if self.num_beams == 0:
 			self.num_beams = inputfits[0].header['BEAMS']
-			# print(self.num_beams)
+		# Frequency parameters
+		self.nbins = inputfits[1].data[0]['bins']
+		# self.bw = inputfits[1].data[0]['bandWidth'] # This reads in 1500?
+		self.bw = inputfits[2].data[0]['bandWidth'] # This reads in 1400?
+		self.lo = inputfits[2].data[0]['localOscillator']
+		# Pixel positions and rotation
 		for i in range(0,self.num_beams):
-			# print(inputfits[3].data[i])
+			self.attenuations = np.append(self.attenuations, inputfits[2].data[i*2]['attenuation'])
 			self.pix_xoff = np.append(self.pix_xoff, inputfits[3].data[i][1])
 			self.pix_yoff = np.append(self.pix_yoff, inputfits[3].data[i][2])
 			self.pix_rel = np.append(self.pix_rel, inputfits[3].data[i][3])
-		# print(inputfits[3].data)
-		# print(self.pix_xoff)
-		# print(self.pix_yoff)
-		# print(self.pix_rel)
-		self.nbins = inputfits[1].data[0]['bins']
-		self.bw = inputfits[1].data[0]['bandWidth']
-		self.lo = inputfits[2].data[0]['localOscillator']
-		self.calc_freqs()
 		self.rotang = inputfits[3].header['DEWUSER']
 		if self.rotang < -360.0:
 			self.rotang = 0.0
 		return
 
 	def calc_freqs(self):
+		# NOTE: Is this right, or need to offset by 0.5*bw/nbins?
 		self.freqs = self.lo + np.arange(0,self.bw,self.bw/self.nbins)
-		# print(len(self.freqs))
-		# print(self.freqs)
 		return
 
 	def get_pixpos(self, pixnum):
